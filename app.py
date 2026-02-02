@@ -8,9 +8,6 @@ from flask import Flask, request, render_template_string, redirect, url_for, ses
 from sqlalchemy import create_engine, text
 
 
-# =========================
-# UYGULAMA
-# =========================
 app = Flask(__name__)
 
 # =========================
@@ -20,11 +17,11 @@ TRAINING_NAME = "KESKİN NİŞANCILIK EĞİTİMİ DEĞERLENDİRME TESTİ"
 INSTITUTION_NAME = "HAKKARİ ÖZEL HAREKAT ŞUBE MÜDÜRLÜĞÜ"
 
 POINTS_PER_Q = 10
-PASS_PERCENT = 70  # yüzde
+PASS_PERCENT = 70
 TOTAL_QUIZ_SECONDS = 10 * 60  # 10 dakika
 
 # =========================
-# ENV (Render)
+# ENV
 # =========================
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_change_me_now")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin_change_me")
@@ -111,20 +108,20 @@ TOTAL_POINTS = len(QUIZ) * POINTS_PER_Q
 
 
 # =========================
-# TEMA
+# TEMA (AÇIK RENK)
 # =========================
 CSS = """
 :root{
-  --bg1:#0b0f14;
-  --bg2:#0a1b2a;
-  --card:#0f1620;
-  --line:#23314a;
-  --text:#eaf1ff;
-  --muted:#a9b7cc;
-  --accent:#2dd4bf;
-  --accent2:#60a5fa;
-  --danger:#fb7185;
-  --ok:#34d399;
+  --bg:#f6f8fb;
+  --bg2:#eef2f8;
+  --card:#ffffff;
+  --line:#d7dee9;
+  --text:#0f172a;
+  --muted:#475569;
+  --accent:#2563eb;   /* mavi */
+  --ok:#16a34a;       /* yeşil */
+  --bad:#dc2626;      /* kırmızı */
+  --shadow: 0 10px 25px rgba(2,6,23,.06);
 }
 *{box-sizing:border-box}
 body{
@@ -132,37 +129,38 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
   color:var(--text);
   background:
-    radial-gradient(900px 450px at 15% -10%, rgba(96,165,250,.18), transparent),
-    radial-gradient(900px 450px at 110% 10%, rgba(45,212,191,.14), transparent),
-    linear-gradient(180deg, var(--bg2), var(--bg1));
+    radial-gradient(900px 450px at 15% -10%, rgba(37,99,235,.10), transparent),
+    radial-gradient(900px 450px at 110% 10%, rgba(22,163,74,.06), transparent),
+    linear-gradient(180deg, var(--bg2), var(--bg));
 }
 header{
   position:sticky; top:0; z-index:10;
-  background: rgba(11,15,20,.85);
+  background: rgba(246,248,251,.86);
   backdrop-filter: blur(8px);
-  border-bottom:1px solid rgba(35,49,74,.9);
+  border-bottom:1px solid var(--line);
   padding:16px;
 }
 .container{max-width:1020px;margin:0 auto;padding:16px}
 h1{margin:0;font-size:18px;letter-spacing:.4px}
-h2{margin:0;font-size:15px;color:var(--muted);font-weight:700;letter-spacing:.3px}
+h2{margin:0;font-size:14px;color:var(--muted);font-weight:800;letter-spacing:.3px}
 .small{margin-top:6px;color:var(--muted);font-size:13px}
 .card{
-  background: rgba(15,22,32,.85);
-  border:1px solid rgba(35,49,74,.9);
+  background: var(--card);
+  border:1px solid var(--line);
   border-radius:16px;
   padding:14px;
   margin:12px 0;
+  box-shadow: var(--shadow);
 }
 .grid{display:grid;gap:12px}
 @media (min-width:720px){ .grid.two{grid-template-columns:1fr 1fr} }
-.label{color:var(--muted);font-size:13px;margin-bottom:6px;font-weight:800;letter-spacing:.2px}
+.label{color:var(--muted);font-size:13px;margin-bottom:6px;font-weight:900;letter-spacing:.2px}
 input[type="text"], input[type="password"], input[type="date"], select{
   width:100%;
   padding:10px 12px;
   border-radius:12px;
-  border:1px solid rgba(35,49,74,.9);
-  background: rgba(10,27,42,.55);
+  border:1px solid var(--line);
+  background: #f9fbff;
   color: var(--text);
   outline: none;
 }
@@ -170,28 +168,32 @@ input[type="text"], input[type="password"], input[type="date"], select{
   display:block;
   padding:10px 12px;
   border-radius:12px;
-  border:1px solid rgba(35,49,74,.9);
+  border:1px solid var(--line);
   margin:8px 0;
-  background: rgba(10,27,42,.45);
+  background: #fbfdff;
 }
-.option:hover{border-color: rgba(45,212,191,.5)}
+.option:hover{border-color: rgba(37,99,235,.35)}
 button{
-  border:1px solid rgba(45,212,191,.55);
-  background: linear-gradient(180deg, rgba(45,212,191,.18), rgba(96,165,250,.12));
-  color:var(--text);
-  padding:10px 14px;
+  border:1px solid rgba(37,99,235,.55);
+  background: linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.06));
+  color: var(--text);
+  padding:11px 14px;
   border-radius:12px;
   font-weight:900;
   cursor:pointer;
 }
+button.danger{
+  border-color: rgba(220,38,38,.55);
+  background: linear-gradient(180deg, rgba(220,38,38,.12), rgba(220,38,38,.06));
+}
 button.secondary{
-  border-color: rgba(169,183,204,.25);
-  background: rgba(10,27,42,.45);
+  border-color: rgba(71,85,105,.25);
+  background: #f3f6fb;
 }
 .notice{
-  border:1px dashed rgba(96,165,250,.5);
-  background: rgba(10,27,42,.45);
-  color:var(--muted);
+  border:1px dashed rgba(37,99,235,.45);
+  background: #f3f7ff;
+  color: var(--muted);
   padding:12px;
   border-radius:14px;
 }
@@ -199,31 +201,50 @@ button.secondary{
   display:inline-block;
   padding:4px 10px;
   border-radius:999px;
-  border:1px solid rgba(35,49,74,.9);
-  background: rgba(10,27,42,.45);
+  border:1px solid var(--line);
+  background: #f3f6fb;
   font-size:12px;
   color: var(--muted);
-  font-weight:800;
+  font-weight:900;
 }
-.badge.ok{border-color: rgba(52,211,153,.45); color: rgba(52,211,153,.95)}
-.badge.bad{border-color: rgba(251,113,133,.45); color: rgba(251,113,133,.95)}
-table{width:100%;border-collapse:collapse;border:1px solid rgba(35,49,74,.9);border-radius:14px;overflow:hidden}
-th,td{padding:10px;border-bottom:1px solid rgba(35,49,74,.9);text-align:left;font-size:13px;vertical-align:top}
-th{background: rgba(10,27,42,.6); color: var(--muted); font-weight:900}
+.badge.ok{border-color: rgba(22,163,74,.35); color: rgba(22,163,74,.95); background: rgba(22,163,74,.08)}
+.badge.bad{border-color: rgba(220,38,38,.35); color: rgba(220,38,38,.95); background: rgba(220,38,38,.08)}
+table{width:100%;border-collapse:collapse;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
+th{background: #f2f6ff; color: var(--muted); font-weight:900}
 .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-a{color:var(--accent2);text-decoration:none;font-weight:800}
-.timer{
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-}
+a{color:var(--accent);text-decoration:none;font-weight:900}
 .timerBox{
-  padding:8px 12px;
+  display:inline-block;
+  padding:6px 12px;
   border-radius:999px;
-  border:1px solid rgba(35,49,74,.9);
-  background: rgba(10,27,42,.45);
+  border:1px solid var(--line);
+  background: #f3f6fb;
 }
 .timerDanger{
-  border-color: rgba(251,113,133,.55) !important;
-  color: rgba(251,113,133,.95) !important;
+  border-color: rgba(220,38,38,.5) !important;
+  background: rgba(220,38,38,.08) !important;
+  color: rgba(220,38,38,.95) !important;
+}
+.detailOpt{border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin:8px 0; background:#fbfdff}
+.detailCorrect{border-color: rgba(22,163,74,.55) !important; background: rgba(22,163,74,.08) !important;}
+.detailWrongSel{border-color: rgba(220,38,38,.55) !important; background: rgba(220,38,38,.08) !important;}
+.footerBar{
+  position:sticky;
+  bottom:0;
+  background: rgba(246,248,251,.92);
+  backdrop-filter: blur(8px);
+  border-top:1px solid var(--line);
+  padding:12px 16px;
+  margin-top:16px;
+}
+.footerInner{
+  max-width:1020px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
 }
 """
 
@@ -277,8 +298,7 @@ def init_db():
     with engine.begin() as conn:
         conn.execute(text(ddl))
 
-        # Migration: eski tabloda kolon yoksa ekle
-        # Postgres IF NOT EXISTS destekler; SQLite farklı olabilir => try/except
+        # Migration
         try:
             conn.execute(text("ALTER TABLE results ADD COLUMN IF NOT EXISTS branch TEXT NOT NULL DEFAULT ''"))
         except Exception:
@@ -308,6 +328,19 @@ def db_has_sicil(sicil: str) -> bool:
     with engine.begin() as conn:
         row = conn.execute(text("SELECT 1 FROM results WHERE sicil = :s LIMIT 1"), {"s": sicil}).fetchone()
         return row is not None
+
+
+def db_get_result(sicil: str):
+    with engine.begin() as conn:
+        r = conn.execute(text("""
+            SELECT ts_utc, first_name, last_name, branch, sicil,
+                   correct_count, total_count, score_points, pass,
+                   wrong_questions_json, answers_json
+            FROM results
+            WHERE sicil = :s
+            LIMIT 1
+        """), {"s": sicil}).mappings().fetchone()
+        return r
 
 
 def db_insert_result(payload: dict):
@@ -349,7 +382,7 @@ def db_query_results(date_from: str | None, date_to: str | None, sicil: str | No
         SELECT
           ts_utc, first_name, last_name, branch, sicil,
           correct_count, total_count, score_points, pass,
-          wrong_questions_json, answers_json
+          answers_json
         FROM results
         {where}
         ORDER BY ts_utc DESC
@@ -360,20 +393,17 @@ def db_query_results(date_from: str | None, date_to: str | None, sicil: str | No
         return rows
 
 
-# =========================
-# Admin: yanlışları okunur yap (numara listesi)
-# =========================
-def wrong_pretty(wrong_json: str) -> str:
-    try:
-        arr = json.loads(wrong_json)
-        if not arr:
-            return "-"
-        return ", ".join(str(x) for x in arr)
-    except Exception:
-        return "-"
+def db_delete_all():
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM results"))
 
 
-app.jinja_env.globals["wrong_pretty"] = wrong_pretty
+def db_delete_by_sicils(sicils: list[str]):
+    if not sicils:
+        return
+    with engine.begin() as conn:
+        for s in sicils:
+            conn.execute(text("DELETE FROM results WHERE sicil = :s"), {"s": s})
 
 
 # =========================
@@ -426,7 +456,7 @@ HOME_PAGE = """
   </div>
 
   <div class="small">
-    Not: Sonuç katılımcıya gösterilmez. Değerlendirme admin panelde tutulur. Test süresi toplam <span class="mono">{{total_minutes}}</span> dakikadır.
+    Test süresi toplam <span class="mono">{{total_minutes}}</span> dakikadır. Süre bitince otomatik gönderilir.
   </div>
 </div>
 </body></html>
@@ -444,7 +474,7 @@ QUIZ_PAGE = """
     <h2>{{institution}}</h2>
     <div class="small">
       KATILIMCI: <span class="mono">{{user.first_name}} {{user.last_name}}</span> •
-      SİCİL: <span class="mono">{{user.sicil}}</span> •
+      SİCİL: <span class="mono" id="sicilText">{{user.sicil}}</span> •
       ŞUBE: <span class="mono">{{user.branch}}</span> •
       TOPLAM PUAN: <span class="mono">{{total_points}}</span>
     </div>
@@ -454,32 +484,38 @@ QUIZ_PAGE = """
 <div class="container">
 
 {% if done %}
-  <div class="card notice">
-    <div style="font-weight:900;color:var(--text)">CEVAPLARINIZ ALINDI, TEŞEKKÜRLER.</div>
-    <div class="small">Bu sicil ile tekrar katılım yapılamaz.</div>
+  <div class="card">
+    <div style="font-weight:950; font-size:16px;">SONUÇ</div>
+    <div style="height:10px"></div>
+    <div class="small">Puan: <span class="mono">{{score_points}}</span> / <span class="mono">{{total_points}}</span></div>
+    <div class="small">Doğru: <span class="mono">{{correct}}</span> / <span class="mono">{{total_q}}</span></div>
+    <div style="height:10px"></div>
+    {% if passed %}
+      <span class="badge ok">BAŞARILI</span>
+    {% else %}
+      <span class="badge bad">BAŞARISIZ</span>
+    {% endif %}
+    <div style="height:12px"></div>
+    <div class="notice">Cevaplarınız alındı. Teşekkürler.</div>
   </div>
+
 {% elif blocked %}
   <div class="card notice">
-    <div style="font-weight:900;color:var(--text)">DAHA ÖNCE KATILIM SAĞLADINIZ.</div>
-    <div class="small">Bu sicil ile tekrar test açılamaz.</div>
+    <div style="font-weight:950;">DAHA ÖNCE KATILIM SAĞLADINIZ.</div>
   </div>
+
 {% else %}
   <div class="card">
-    <div class="timer">
-      <div class="small">
-        SÜRE: <span class="mono timerBox" id="timerBox"><span id="timer">10:00</span></span>
-        <span class="small">• Süre bitince otomatik gönderilir.</span>
-      </div>
-      <div>
-        <button type="submit" form="quizForm">GÖNDER</button>
-      </div>
+    <div class="small">
+      SÜRE: <span class="mono timerBox" id="timerBox"><span id="timer">10:00</span></span>
+      <span class="small"> • Sayfa yenilense bile süre ve işaretler korunur.</span>
     </div>
   </div>
 
   <form method="post" id="quizForm">
     {% for i, item in enumerate(quiz) %}
       <div class="card">
-        <div style="font-weight:900; margin-bottom:10px">{{i+1}}) {{item.q}}</div>
+        <div style="font-weight:950; margin-bottom:10px">{{i+1}}) {{item.q}}</div>
         {% for c_i, c in enumerate(item.choices) %}
           <label class="option">
             <input type="radio" name="q{{i}}" value="{{c_i}}">
@@ -489,12 +525,21 @@ QUIZ_PAGE = """
         <div class="small">Bu soru: {{ppq}} puan</div>
       </div>
     {% endfor %}
+
+    <div class="footerBar">
+      <div class="footerInner">
+        <div class="small">Bitirince sonuç ekranda gösterilir.</div>
+        <button type="submit" id="finishBtn">TESTİ BİTİR</button>
+      </div>
+    </div>
   </form>
 
   <script>
   (() => {
-    const total = {{total_seconds}};
-    let left = total;
+    const totalSeconds = {{total_seconds}};
+    const sicil = document.getElementById('sicilText').textContent.trim();
+    const storageKey = "sniperquiz_" + sicil;
+
     const timerEl = document.getElementById('timer');
     const box = document.getElementById('timerBox');
     const form = document.getElementById('quizForm');
@@ -502,32 +547,84 @@ QUIZ_PAGE = """
     function fmt(s){
       const m = Math.floor(s/60);
       const r = s % 60;
-      const mm = String(m).padStart(2,'0');
-      const rr = String(r).padStart(2,'0');
-      return `${mm}:${rr}`;
+      return String(m).padStart(2,'0') + ":" + String(r).padStart(2,'0');
     }
 
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(storageKey);
+        if(!raw) return null;
+        return JSON.parse(raw);
+      }catch(e){
+        return null;
+      }
+    }
+
+    function saveState(state){
+      try{
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }catch(e){}
+    }
+
+    function clearState(){
+      try{ localStorage.removeItem(storageKey); }catch(e){}
+    }
+
+    // 1) state hazırla
+    let state = loadState();
+    const now = Date.now();
+
+    if(!state || !state.endTime){
+      state = {
+        endTime: now + totalSeconds * 1000,
+        answers: {}  // {"q0":"2", "q1":"1"...}
+      };
+      saveState(state);
+    }
+
+    // 2) kayıtlı cevapları geri yükle
+    for(const [name, val] of Object.entries(state.answers || {})){
+      const sel = document.querySelector('input[name="'+name+'"][value="'+val+'"]');
+      if(sel) sel.checked = true;
+    }
+
+    // 3) her değişimde cevapları kaydet
+    form.addEventListener('change', (ev) => {
+      const t = ev.target;
+      if(!t || t.type !== "radio") return;
+      state.answers = state.answers || {};
+      state.answers[t.name] = t.value;
+      saveState(state);
+    });
+
+    // 4) sayaç
     function tick(){
+      const leftMs = state.endTime - Date.now();
+      const left = Math.max(0, Math.floor(leftMs/1000));
+
       timerEl.textContent = fmt(left);
 
-      if (left <= 60){
+      if(left <= 60){
         box.classList.add('timerDanger');
       }
 
-      if (left <= 0){
-        // Süre bitti: otomatik gönder
+      if(left <= 0){
+        // süre bitti -> otomatik gönder
         form.submit();
         return;
       }
-      left -= 1;
       setTimeout(tick, 1000);
     }
+    tick();
 
-    // Sayfa refresh olursa reset olur. İstersen daha sonra localStorage ile devam ettiririz.
-    timerEl.textContent = fmt(left);
-    setTimeout(tick, 1000);
+    // 5) submit olunca localStorage temizle (çifte kayıt vs. önler)
+    form.addEventListener('submit', () => {
+      clearState();
+    });
+
   })();
   </script>
+
 {% endif %}
 
 <div style="height:8px"></div>
@@ -584,6 +681,8 @@ ADMIN_DASHBOARD_PAGE = """
 
 <div class="container">
 
+  {% if msg %}<div class="card notice">{{msg}}</div>{% endif %}
+
   <div class="card">
     <form method="get" action="/admin/dashboard" class="grid two">
       <div>
@@ -614,48 +713,56 @@ ADMIN_DASHBOARD_PAGE = """
   </div>
 
   <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>SİCİL</th>
-          <th>AD</th>
-          <th>SOYAD</th>
-          <th>ŞUBE</th>
-          <th>PUAN</th>
-          <th>DURUM</th>
-          <th>TARİH (UTC)</th>
-          <th>YANLIŞ SORULAR</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% if rows %}
-        {% for r in rows %}
-          <tr>
-            <td class="mono">{{r.sicil}}</td>
-            <td><a href="/admin/result/{{r.sicil}}">{{r.first_name}}</a></td>
-            <td><a href="/admin/result/{{r.sicil}}">{{r.last_name}}</a></td>
-            <td>{{r.branch}}</td>
-            <td class="mono">{{r.score_points}} / {{r.total_count * ppq}}</td>
-            <td>
-              {% if r.pass == 1 %}
-                <span class="badge ok">BAŞARILI</span>
-              {% else %}
-                <span class="badge bad">BAŞARISIZ</span>
-              {% endif %}
-            </td>
-            <td class="mono">{{r.ts_utc}}</td>
-            <td class="mono">{{wrong_pretty(r.wrong_questions_json)}}</td>
-          </tr>
-        {% endfor %}
-      {% else %}
-        <tr><td colspan="8">Sonuç yok.</td></tr>
-      {% endif %}
-      </tbody>
-    </table>
-  </div>
+    <form method="post" action="/admin/delete">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+        <button type="submit" name="mode" value="selected" class="danger">SEÇİLİLERİ SİL</button>
+        <button type="submit" name="mode" value="all" class="danger"
+                onclick="return confirm('TÜM KAYITLAR SİLİNECEK. Emin misin?');">TÜM KAYITLARI SİL</button>
+      </div>
 
-  <div class="small">
-    İsim/soyisim tıklayınca cevap anahtarı detayına gider (doğru yeşil, yanlış kırmızı).
+      <table>
+        <thead>
+          <tr>
+            <th>SEÇ</th>
+            <th>SİCİL</th>
+            <th>AD</th>
+            <th>SOYAD</th>
+            <th>ŞUBE</th>
+            <th>PUAN</th>
+            <th>DURUM</th>
+            <th>TARİH (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if rows %}
+          {% for r in rows %}
+            <tr>
+              <td><input type="checkbox" name="sicil" value="{{r.sicil}}"></td>
+              <td class="mono">{{r.sicil}}</td>
+              <td><a href="/admin/result/{{r.sicil}}">{{r.first_name}}</a></td>
+              <td><a href="/admin/result/{{r.sicil}}">{{r.last_name}}</a></td>
+              <td>{{r.branch}}</td>
+              <td class="mono">{{r.score_points}} / {{r.total_count * ppq}}</td>
+              <td>
+                {% if r.pass == 1 %}
+                  <span class="badge ok">BAŞARILI</span>
+                {% else %}
+                  <span class="badge bad">BAŞARISIZ</span>
+                {% endif %}
+              </td>
+              <td class="mono">{{r.ts_utc}}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="8">Sonuç yok.</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+
+      <div class="small" style="margin-top:10px;">
+        İsim/soyisim tıklayınca detay sayfaya gider (doğru yeşil, yanlış seçimi kırmızı).
+      </div>
+    </form>
   </div>
 
 </div>
@@ -685,21 +792,19 @@ ADMIN_RESULT_PAGE = """
 <div class="container">
   {% for i, q in enumerate(quiz) %}
     <div class="card">
-      <div style="font-weight:900;margin-bottom:10px">{{i+1}}) {{q.q}}</div>
+      <div style="font-weight:950;margin-bottom:10px">{{i+1}}) {{q.q}}</div>
+
+      {% set user_sel = answers[i] %}
+
       {% for c_i, c in enumerate(q.choices) %}
         {% set is_correct = (c_i == q.correct) %}
-        {% set user_sel = answers[i] %}
         {% set is_user = (user_sel is not none and c_i == user_sel) %}
 
-        <div class="option"
-             style="
-               {% if is_user and not is_correct %}border-color: rgba(251,113,133,.75); background: rgba(251,113,133,.12);{% endif %}
-               {% if is_correct %}border-color: rgba(52,211,153,.75); background: rgba(52,211,153,.10);{% endif %}
-             ">
+        <div class="detailOpt
+          {% if is_correct %} detailCorrect {% endif %}
+          {% if is_user and not is_correct %} detailWrongSel {% endif %}
+        ">
           <span class="mono">{{ "ABCD"[c_i] }})</span> {{c}}
-          {% if is_user and is_correct %} <span class="badge ok">SEÇTİĞİ (DOĞRU)</span>{% endif %}
-          {% if is_user and not is_correct %} <span class="badge bad">SEÇTİĞİ (YANLIŞ)</span>{% endif %}
-          {% if (not is_user) and is_correct %} <span class="badge ok">DOĞRU</span>{% endif %}
         </div>
       {% endfor %}
     </div>
@@ -753,19 +858,28 @@ def quiz():
     if not sicil:
         return redirect(url_for("home", msg="Sicil bilgisi eksik."))
 
-    # DB'de varsa soruları gösterme
-    if db_has_sicil(sicil):
+    # DB'de varsa: sonucu göster (kullanıcıya)
+    existing = db_get_result(sicil)
+    if existing:
+        total_q = existing["total_count"]
+        correct = existing["correct_count"]
+        score_points = existing["score_points"]
+        passed = (existing["pass"] == 1)
+
         resp = make_response(render_template_string(
-            QUIZ_PAGE, css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
-            user=user, quiz=QUIZ, enumerate=enumerate, done=False, blocked=True,
-            total_points=TOTAL_POINTS, ppq=POINTS_PER_Q, total_seconds=TOTAL_QUIZ_SECONDS
+            QUIZ_PAGE,
+            css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
+            user=user, quiz=QUIZ, enumerate=enumerate,
+            done=True, blocked=False,
+            total_points=TOTAL_POINTS, ppq=POINTS_PER_Q, total_seconds=TOTAL_QUIZ_SECONDS,
+            total_q=total_q, correct=correct, score_points=score_points, passed=passed
         ))
         return no_store(resp)
 
     if request.method == "POST":
         correct = 0
         wrong_qnums = []
-        answers = []  # her soru için seçilen şık index'i (0-3) veya None
+        answers = []
 
         for i, q in enumerate(QUIZ):
             v = request.form.get(f"q{i}")
@@ -805,18 +919,23 @@ def quiz():
         except Exception:
             return redirect(url_for("home", msg="Daha önce katılım sağladınız."))
 
-        # Bitti: soruları tekrar göstermiyoruz
+        # Kullanıcıya sonuç göster
         resp = make_response(render_template_string(
-            QUIZ_PAGE, css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
-            user=user, quiz=QUIZ, enumerate=enumerate, done=True, blocked=False,
-            total_points=TOTAL_POINTS, ppq=POINTS_PER_Q, total_seconds=TOTAL_QUIZ_SECONDS
+            QUIZ_PAGE,
+            css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
+            user=user, quiz=QUIZ, enumerate=enumerate,
+            done=True, blocked=False,
+            total_points=TOTAL_POINTS, ppq=POINTS_PER_Q, total_seconds=TOTAL_QUIZ_SECONDS,
+            total_q=len(QUIZ), correct=correct, score_points=score_points, passed=(passed == 1)
         ))
         return no_store(resp)
 
-    # GET
+    # GET: testi göster
     resp = make_response(render_template_string(
-        QUIZ_PAGE, css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
-        user=user, quiz=QUIZ, enumerate=enumerate, done=False, blocked=False,
+        QUIZ_PAGE,
+        css=CSS, training=TRAINING_NAME, institution=INSTITUTION_NAME,
+        user=user, quiz=QUIZ, enumerate=enumerate,
+        done=False, blocked=False,
         total_points=TOTAL_POINTS, ppq=POINTS_PER_Q, total_seconds=TOTAL_QUIZ_SECONDS
     ))
     return no_store(resp)
@@ -854,6 +973,8 @@ def admin_dashboard():
     if session.get("admin") is not True:
         return redirect(url_for("admin_login"))
 
+    msg = request.args.get("msg", "") or ""
+
     f_from = request.args.get("from", "") or ""
     f_to = request.args.get("to", "") or ""
     f_sicil = (request.args.get("sicil", "") or "").strip()
@@ -879,9 +1000,32 @@ def admin_dashboard():
         f_sicil=f_sicil,
         f_status=f_status,
         qs=qs,
-        ppq=POINTS_PER_Q
+        ppq=POINTS_PER_Q,
+        msg=msg
     ))
     return no_store(resp)
+
+
+# -------- Admin: delete logs ----------
+@app.post("/admin/delete")
+def admin_delete():
+    if session.get("admin") is not True:
+        return redirect(url_for("admin_login"))
+
+    mode = (request.form.get("mode") or "").strip()
+
+    if mode == "all":
+        db_delete_all()
+        return redirect(url_for("admin_dashboard", msg="Tüm kayıtlar silindi."))
+
+    if mode == "selected":
+        sicils = request.form.getlist("sicil")
+        if not sicils:
+            return redirect(url_for("admin_dashboard", msg="Seçili kayıt yok."))
+        db_delete_by_sicils(sicils)
+        return redirect(url_for("admin_dashboard", msg=f"{len(sicils)} kayıt silindi."))
+
+    return redirect(url_for("admin_dashboard", msg="Geçersiz işlem."))
 
 
 # -------- Admin: detay ----------
@@ -890,15 +1034,7 @@ def admin_result_detail(sicil):
     if session.get("admin") is not True:
         return redirect(url_for("admin_login"))
 
-    with engine.begin() as conn:
-        r = conn.execute(text("""
-            SELECT ts_utc, first_name, last_name, branch, sicil, correct_count, total_count,
-                   score_points, pass, wrong_questions_json, answers_json
-            FROM results
-            WHERE sicil = :s
-            LIMIT 1
-        """), {"s": sicil}).mappings().fetchone()
-
+    r = db_get_result(sicil)
     if not r:
         return "Kayıt bulunamadı", 404
 
@@ -907,7 +1043,7 @@ def admin_result_detail(sicil):
     except Exception:
         answers = [None] * len(QUIZ)
 
-    # answers uzunluğu tutmazsa normalize et
+    # normalize
     if len(answers) < len(QUIZ):
         answers = answers + [None] * (len(QUIZ) - len(answers))
     if len(answers) > len(QUIZ):
@@ -943,16 +1079,14 @@ def admin_export_csv():
     writer = csv.writer(output)
     writer.writerow([
         "ts_utc", "sicil", "first_name", "last_name", "branch",
-        "score_points", "total_points", "pass", "wrong_questions", "answers_json"
+        "score_points", "total_points", "pass", "answers_json"
     ])
 
     for r in rows:
         total_points = r["total_count"] * POINTS_PER_Q
         writer.writerow([
             r["ts_utc"], r["sicil"], r["first_name"], r["last_name"], r["branch"],
-            r["score_points"], total_points, r["pass"],
-            wrong_pretty(r["wrong_questions_json"]),
-            r["answers_json"]
+            r["score_points"], total_points, r["pass"], r["answers_json"]
         ])
 
     data = output.getvalue().encode("utf-8")
@@ -962,9 +1096,6 @@ def admin_export_csv():
     return no_store(resp)
 
 
-# =========================
-# MAIN
-# =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5000"))
     app.run(host="0.0.0.0", port=port)
