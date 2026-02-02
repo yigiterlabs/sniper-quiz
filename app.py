@@ -34,10 +34,13 @@ else:
     engine = create_engine("sqlite:///results.db", pool_pre_ping=True)
 
 def init_db():
-    with engine.begin() as conn:
-        conn.execute(text("""
+    # Postgres mi? (DATABASE_URL varsa ve postgres içeriyorsa)
+    is_postgres = bool(DATABASE_URL) and ("postgres" in DATABASE_URL)
+
+    if is_postgres:
+        ddl = """
         CREATE TABLE IF NOT EXISTS results (
-            id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             ts_utc TEXT NOT NULL,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
@@ -48,7 +51,26 @@ def init_db():
             pass INTEGER NOT NULL,
             wrong_questions_json TEXT NOT NULL
         )
-        """))
+        """
+    else:
+        # SQLite uyumlu: IDENTITY yok, AUTOINCREMENT kullan
+        ddl = """
+        CREATE TABLE IF NOT EXISTS results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts_utc TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            sicil TEXT NOT NULL UNIQUE,
+            correct_count INTEGER NOT NULL,
+            total_count INTEGER NOT NULL,
+            score_points INTEGER NOT NULL,
+            pass INTEGER NOT NULL,
+            wrong_questions_json TEXT NOT NULL
+        )
+        """
+
+    with engine.begin() as conn:
+        conn.execute(text(ddl))
 
 init_db()
 
