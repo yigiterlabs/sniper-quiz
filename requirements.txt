@@ -1,6 +1,6 @@
 flask==3.0.3
 gunicorn==22.0.0
 SQLAlchemy==2.0.32
-psycopg[binary]==3.2.1
+psycopg[binary]==3.2.13
 flask==3.0.3
 gunicorn==22.0.0
